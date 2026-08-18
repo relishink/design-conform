@@ -7,7 +7,14 @@ export const actionComponents: SystemComponent[] = [
     category: 'Actions',
     summary: 'The single approved way to render a clickable action.',
     detect: ['btn'],
-    expect: ['button', '[role="button"]', 'input[type="submit"]', 'input[type="button"]'],
+    expect: [
+      'button',
+      '[role="button"]',
+      'input[type="submit"]',
+      'input[type="button"]',
+      'div[onclick]',
+      'span[onclick]',
+    ],
     variants: [
       {
         name: 'Primary',

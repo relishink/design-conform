@@ -21,26 +21,29 @@ export const dataInputComponents: SystemComponent[] = [
       {
         name: 'With label',
         description: 'The default. A visible label survives autofill, zoom and translation.',
-        html: `<fieldset class="fieldset">
-  <legend class="fieldset-legend">Work email</legend>
-  <input type="email" class="input" placeholder="you@company.com" />
-  <p class="label">We only use this for billing receipts.</p>
-</fieldset>`,
+        html: `<div class="w-full max-w-xs">
+  <label class="label" for="work-email">Work email</label>
+  <input id="work-email" type="email" class="input w-full" placeholder="you@company.com" aria-describedby="work-email-help" />
+  <p id="work-email-help" class="label text-xs">We only use this for billing receipts.</p>
+</div>`,
       },
       {
         name: 'Error state',
-        html: `<fieldset class="fieldset">
-  <legend class="fieldset-legend">Work email</legend>
-  <input type="email" class="input input-error" value="not-an-email" aria-describedby="email-error" />
-  <p id="email-error" class="label text-error">Enter an email address, like you@company.com.</p>
-</fieldset>`,
+        html: `<div class="w-full max-w-xs">
+  <label class="label" for="billing-email">Work email</label>
+  <input id="billing-email" type="email" class="input input-error w-full" value="not-an-email" aria-describedby="billing-email-error" aria-invalid="true" />
+  <p id="billing-email-error" class="label text-error text-xs">Enter an email address, like you@company.com.</p>
+</div>`,
       },
       {
         name: 'Sizes',
         html: `<div class="flex flex-col gap-2">
-  <input type="text" class="input input-sm" placeholder="Small" />
-  <input type="text" class="input" placeholder="Default" />
-  <input type="text" class="input input-lg" placeholder="Large" />
+  <label class="label" for="size-sm">Small</label>
+  <input id="size-sm" type="text" class="input input-sm" />
+  <label class="label" for="size-md">Default</label>
+  <input id="size-md" type="text" class="input" />
+  <label class="label" for="size-lg">Large</label>
+  <input id="size-lg" type="text" class="input input-lg" />
 </div>`,
       },
     ],
@@ -65,14 +68,14 @@ export const dataInputComponents: SystemComponent[] = [
     variants: [
       {
         name: 'Default',
-        html: `<fieldset class="fieldset">
-  <legend class="fieldset-legend">Environment</legend>
-  <select class="select">
+        html: `<div class="w-full max-w-xs">
+  <label class="label" for="environment">Environment</label>
+  <select id="environment" class="select w-full">
     <option>Production</option>
     <option>Staging</option>
     <option>Development</option>
   </select>
-</fieldset>`,
+</div>`,
       },
     ],
     usage: [
@@ -95,10 +98,10 @@ export const dataInputComponents: SystemComponent[] = [
     variants: [
       {
         name: 'Default',
-        html: `<fieldset class="fieldset">
-  <legend class="fieldset-legend">Release notes</legend>
-  <textarea class="textarea h-24" placeholder="What changed in this release?"></textarea>
-</fieldset>`,
+        html: `<div class="w-full max-w-xs">
+  <label class="label" for="release-notes">Release notes</label>
+  <textarea id="release-notes" class="textarea h-24 w-full" placeholder="What changed in this release?"></textarea>
+</div>`,
       },
     ],
     usage: [
