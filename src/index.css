@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark;
+}
+
+/* The prototype iframes render the same stylesheet this app uses, so the
+   checker measures against exactly what the designer sees. */
+html,
+body,
+#root {
+  height: 100%;
+}

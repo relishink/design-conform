@@ -1,0 +1,201 @@
+import { useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { componentsByCategory, getComponent, registry } from '../system'
+import type { SystemComponent } from '../system'
+import CodeBlock from '../components/CodeBlock'
+
+export default function Library() {
+  const { componentId } = useParams()
+  const selected = componentId ? getComponent(componentId) : undefined
+
+  if (componentId && !selected) {
+    return (
+      <div className="mx-auto max-w-3xl p-6">
+        <div role="alert" className="alert alert-error">
+          No component with the id “{componentId}” is in the library.
+        </div>
+        <Link to="/library" className="btn mt-4">
+          Back to the library
+        </Link>
+      </div>
+    )
+  }
+
+  return selected ? <ComponentDetail component={selected} /> : <Catalog />
+}
+
+function Catalog() {
+  const [query, setQuery] = useState('')
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return componentsByCategory()
+      .map((group) => ({
+        ...group,
+        components: q
+          ? group.components.filter(
+              (c) =>
+                c.name.toLowerCase().includes(q) ||
+                c.summary.toLowerCase().includes(q) ||
+                c.detect.some((d) => d.includes(q)),
+            )
+          : group.components,
+      }))
+      .filter((group) => group.components.length > 0)
+  }, [query])
+
+  const total = groups.reduce((n, g) => n + g.components.length, 0)
+
+  return (
+    <div className="mx-auto max-w-6xl p-6">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold">Component library</h1>
+        <p className="text-base-content/70 mt-2 max-w-2xl">
+          The approved set. This is the same registry the checker measures generated prototypes
+          against and the same list your AI is told to prefer — so what you see here is literally
+          what counts as on-system.
+        </p>
+      </header>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          className="input w-full max-w-xs"
+          placeholder="Filter components"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Filter components"
+        />
+        <span className="text-base-content/60 text-sm">
+          {total} of {registry.length} components
+        </span>
+      </div>
+
+      {total === 0 && (
+        <div role="alert" className="alert">
+          Nothing matches “{query}”. Try a component name or a class like <code>btn</code>.
+        </div>
+      )}
+
+      {groups.map((group) => (
+        <section key={group.category} className="mb-10">
+          <h2 className="mb-3 text-xl font-semibold">{group.category}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {group.components.map((component) => (
+              <ComponentCard key={component.id} component={component} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+function ComponentCard({ component }: { component: SystemComponent }) {
+  return (
+    <Link
+      to={`/library/${component.id}`}
+      className="card card-border bg-base-100 hover:border-primary focus-visible:border-primary transition-colors"
+    >
+      <div className="card-body gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="card-title text-base">{component.name}</h3>
+          <span className="badge badge-sm badge-ghost font-mono">.{component.detect[0]}</span>
+        </div>
+        <p className="text-base-content/70 text-sm">{component.summary}</p>
+        {/* Fixed height so a row of cards stays level regardless of how big the
+            variant is — a ragged grid reads as broken. */}
+        <div className="border-base-300 bg-base-200 rounded-box mt-auto flex h-28 items-center justify-center overflow-hidden border p-4">
+          <Preview html={component.variants[0].previewHtml ?? component.variants[0].html} />
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function ComponentDetail({ component }: { component: SystemComponent }) {
+  const [variantIndex, setVariantIndex] = useState(0)
+  const variant = component.variants[variantIndex]
+
+  return (
+    <div className="mx-auto max-w-4xl p-6">
+      <nav aria-label="Breadcrumb" className="breadcrumbs mb-2 text-sm">
+        <ul>
+          <li>
+            <Link to="/library">Library</Link>
+          </li>
+          <li>{component.category}</li>
+          <li aria-current="page">{component.name}</li>
+        </ul>
+      </nav>
+
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold">{component.name}</h1>
+        <p className="text-base-content/70 mt-2">{component.summary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {component.detect.map((cls) => (
+            <span key={cls} className="badge badge-outline font-mono">
+              .{cls}
+            </span>
+          ))}
+        </div>
+      </header>
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-xl font-semibold">Variants</h2>
+        {component.variants.length > 1 && (
+          <div role="tablist" className="tabs tabs-box mb-4 w-fit">
+            {component.variants.map((v, i) => (
+              <button
+                key={v.name}
+                role="tab"
+                aria-selected={i === variantIndex}
+                className={`tab ${i === variantIndex ? 'tab-active' : ''}`}
+                onClick={() => setVariantIndex(i)}
+              >
+                {v.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {variant.description && (
+          <p className="text-base-content/70 mb-3 text-sm">{variant.description}</p>
+        )}
+
+        <div className="border-base-300 bg-base-200 rounded-box mb-3 flex min-h-32 items-center justify-center overflow-auto border p-6">
+          <Preview html={variant.previewHtml ?? variant.html} />
+        </div>
+
+        <CodeBlock code={variant.html} />
+      </section>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <section>
+          <h2 className="mb-3 text-xl font-semibold">Usage</h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm">
+            {component.usage.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <h2 className="mb-3 text-xl font-semibold">Accessibility</h2>
+          <ul className="list-disc space-y-2 pl-5 text-sm">
+            {component.a11yNotes.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Catalog previews are first-party markup from the registry, not model output,
+ * so they render inline and inherit the app's stylesheet. Untrusted prototype
+ * markup goes through the sandboxed iframes in PrototypeFrame instead.
+ */
+function Preview({ html }: { html: string }) {
+  return <div className="w-full" dangerouslySetInnerHTML={{ __html: html }} />
+}
