@@ -81,7 +81,12 @@ The checker enforces a **modular, configurable** rule set. Rules live in one pla
 - **Design tokens** — spacing, color, and type scale conformance
 - **Component usage** — approved-library vs. custom detection
 
-[//]: # (TODO: Link to /standards or the rules directory once built.)
+Rules live in [`src/checker/rules/`](src/checker/rules/), one module each. The **Standards** page
+renders that same array, so a rule cannot be documented without being executed — or executed
+without being documented. Adding a rule publishes it.
+
+The component library in [`src/system/`](src/system/) works the same way: it is the single source
+the catalog renders, the AI system prompt is generated from, and the checker measures against.
 
 ---
 
@@ -96,11 +101,13 @@ The checker enforces a **modular, configurable** rule set. Rules live in one pla
 
 ## Roadmap
 
-- [ ] Phase 1 — Component library + catalog
-- [ ] Phase 2 — Vibe-coding prototyping surface
-- [ ] Phase 3 — Component checker + drift-to-prompt loop + standards engine
-- [ ] Phase 4 — Handoff / export
+- [x] Phase 1 — Component library + catalog
+- [x] Phase 2 — Vibe-coding prototyping surface
+- [x] Phase 3 — Component checker + drift-to-prompt loop + standards engine
+- [x] Phase 4 — Handoff / export
 - [ ] Additional example design systems beyond daisyUI
+- [ ] Automated regression tests for the rule set
+- [ ] Richer drift detection (hand-rolled tabs, modals, navbars)
 
 ---
 
