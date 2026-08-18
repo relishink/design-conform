@@ -8,7 +8,8 @@ interface Props {
 export default function CodeBlock({ code, label = 'Copy code' }: Props) {
   return (
     <div className="relative">
-      <pre className="bg-base-300 text-base-content rounded-box max-h-80 overflow-auto p-4 text-xs leading-relaxed">
+      {/* Right padding keeps long lines from running under the copy button. */}
+      <pre className="bg-base-300 text-base-content rounded-box max-h-80 overflow-auto p-4 pr-28 text-xs leading-relaxed">
         <code>{code}</code>
       </pre>
       <div className="absolute top-2 right-2">
