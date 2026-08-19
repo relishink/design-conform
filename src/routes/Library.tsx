@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, NavLink, useParams } from 'react-router-dom'
 import { componentsByCategory, getComponent, registry } from '../system'
 import type { SystemComponent } from '../system'
 import CodeBlock from '../components/CodeBlock'
@@ -7,21 +7,82 @@ import CodeBlock from '../components/CodeBlock'
 export default function Library() {
   const { componentId } = useParams()
   const selected = componentId ? getComponent(componentId) : undefined
+  const missing = Boolean(componentId && !selected)
 
-  if (componentId && !selected) {
-    return (
-      <div className="mx-auto max-w-3xl p-6">
-        <div role="alert" className="alert alert-error">
-          No component with the id “{componentId}” is in the library.
-        </div>
-        <Link to="/library" className="btn mt-4">
-          Back to the library
-        </Link>
+  return (
+    <div className="mx-auto flex w-full max-w-7xl gap-8 px-4">
+      <LibraryNav />
+      <div className="min-w-0 flex-1 py-6">
+        {missing ? (
+          <>
+            <div role="alert" className="alert alert-error">
+              <span>No component with the id “{componentId}” is in the library.</span>
+            </div>
+            <Link to="/library" className="btn mt-4">
+              Back to the library
+            </Link>
+          </>
+        ) : selected ? (
+          <ComponentDetail component={selected} />
+        ) : (
+          <Catalog />
+        )}
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  return selected ? <ComponentDetail component={selected} /> : <Catalog />
+/**
+ * Persistent index of the library, grouped the way the registry is. Built with
+ * our own Menu component rather than bespoke markup — the app should pass its
+ * own checker.
+ */
+function LibraryNav() {
+  const groups = componentsByCategory()
+
+  return (
+    // Hidden on small screens, where the catalog grid and breadcrumbs already
+    // carry navigation and a 224px rail would eat half the viewport.
+    <aside className="hidden w-56 shrink-0 lg:block">
+      <nav
+        aria-label="Component library"
+        className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto py-6"
+      >
+        {/* NavLink sets aria-current="page" on the active link by itself, so the
+            "mark the current item" rule is satisfied without doing it here. */}
+        <ul className="menu w-full p-0">
+          <li>
+            <NavLink
+              to="/library"
+              end
+              className={({ isActive }) => (isActive ? 'menu-active font-medium' : '')}
+            >
+              All components
+              <span className="badge badge-xs badge-ghost ml-auto">{registry.length}</span>
+            </NavLink>
+          </li>
+
+          {groups.map((group) => (
+            <li key={group.category}>
+              <h2 className="menu-title px-3 pt-4 pb-1 text-xs">{group.category}</h2>
+              <ul className="m-0 border-none p-0">
+                {group.components.map((component) => (
+                  <li key={component.id}>
+                    <NavLink
+                      to={`/library/${component.id}`}
+                      className={({ isActive }) => (isActive ? 'menu-active font-medium' : '')}
+                    >
+                      {component.name}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  )
 }
 
 function Catalog() {
@@ -46,7 +107,7 @@ function Catalog() {
   const total = groups.reduce((n, g) => n + g.components.length, 0)
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
+    <div>
       <header className="mb-6">
         <h1 className="text-3xl font-bold">Component library</h1>
         <p className="text-base-content/70 mt-2 max-w-2xl">
@@ -117,7 +178,7 @@ function ComponentDetail({ component }: { component: SystemComponent }) {
   const variant = component.variants[variantIndex]
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="max-w-4xl">
       <nav aria-label="Breadcrumb" className="breadcrumbs mb-2 text-sm">
         <ul>
           <li>
